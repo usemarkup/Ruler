@@ -9,7 +9,6 @@ Additionally when a rule does not pass, the reason for the failure is stored.
 Ruler is a simple stateless production rules engine for PHP 5.3+.
 
 
-
 Ruler has an easy, straightforward DSL
 --------------------------------------
 
