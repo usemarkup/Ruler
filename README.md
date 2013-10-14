@@ -1,9 +1,12 @@
 Ruler
 =====
 
-Ruler is a simple stateless production rules engine for PHP 5.3+.
+The version of Ruler is forked from bobthecow/Ruler.
+It removes the ability for a rule to store a callback which can be executed when the rule passes (this should be delegated to another mechanism).
 
-[![Build Status](https://secure.travis-ci.org/bobthecow/Ruler.png?branch=master)](http://travis-ci.org/bobthecow/Ruler)
+Additionally when a rule does not pass, the reason for the failure is stored.
+
+Ruler is a simple stateless production rules engine for PHP 5.3+.
 
 
 Ruler has an easy, straightforward DSL
@@ -19,10 +22,7 @@ $rule = $rb->create(
     $rb->logicalAnd(
         $rb['minNumPeople']->lessThanOrEqualTo($rb['actualNumPeople']),
         $rb['maxNumPeople']->greaterThanOrEqualTo($rb['actualNumPeople'])
-    ),
-    function() {
-        echo 'YAY!';
-    }
+    )
 );
 
 $context = new Context(array(
@@ -33,7 +33,7 @@ $context = new Context(array(
     },
 ));
 
-$rule->execute($context); // "Yay!"
+$rule->evaluate($context); // "true"
 ```
 
 
@@ -49,10 +49,7 @@ $rule = new Rule(
     new Operator\LogicalAnd(array(
         new Operator\LessThanOrEqualTo(new Variable('minNumPeople'), $actualNumPeople),
         new Operator\GreaterThanOrEqualTo(new Variable('maxNumPeople'), $actualNumPeople)
-    )),
-    function() {
-        echo 'YAY!';
-    }
+    ))
 );
 
 $context = new Context(array(
@@ -63,7 +60,7 @@ $context = new Context(array(
     },
 ));
 
-$rule->execute($context); // "Yay!"
+$rule->evaluate($context); // "true"
 ```
 
 But that doesn't sound too fun, does it?
@@ -134,7 +131,7 @@ $rb->logicalOr($aEqualsB, $aDoesNotEqualB);  // True if either condition is true
 $rb->logicalXor($aEqualsB, $aDoesNotEqualB); // True if only one condition is true
 ```
 
-### `evaluate` and `execute` Rules
+### `evaluate` Rules
 
 `evaluate()` a Rule with Context to figure out whether it is true.
 
@@ -150,60 +147,7 @@ $userIsLoggedIn = $rb->create($rb['userName']->notEqualTo(null));
 if ($userIsLoggedIn->evaluate($context)) {
     // Do something special for logged in users!
 }
-```
 
-If a Rule has an action, you can `execute()` it directly and save yourself a
-couple of lines of code.
-
-
-```php
-<?php
-
-$hiJustin = $rb->create(
-    $rb['userName']->equalTo('bobthecow'),
-    function() {
-        echo "Hi, Justin!";
-    }
-);
-
-$hiJustin->execute($context);  // "Hi, Justin!"
-```
-
-### Even `execute` a whole grip of Rules at once
-
-```php
-$hiJon = $rb->create(
-    $rb['userName']->equalTo('jwage'),
-    function() {
-        echo "Hey there Jon!";
-    }
-);
-
-$hiEveryoneElse = $rb->create(
-    $rb->logicalAnd(
-        $rb->logicalNot($rb->logicalOr($hiJustin, $hiJon)), // The user is neither Justin nor Jon
-        $userIsLoggedIn                                     // ... but a user nonetheless
-    ),
-    function() use ($context) {
-        echo sprintf("Hello, %s", $context['userName']);
-    }
-);
-
-$rules = new RuleSet(array($hiJustin, $hiJon, $hiEveryoneElse));
-
-// Let's add one more Rule, so non-authenticated users have a chance to log in
-$redirectForAuthentication = $rb->create($rb->logicalNot($userIsLoggedIn), function() {
-    header('Location: /login');
-    exit;
-});
-
-$rules->addRule($redirectForAuthentication);
-
-// Now execute() all true Rules.
-//
-// Astute readers will note that the Rules we defined are mutually exclusive, so
-// at most one of them will evaluate to true and execute an action...
-$rules->executeRules($context);
 ```
 
 

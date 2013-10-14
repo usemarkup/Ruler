@@ -62,25 +62,4 @@ class RuleBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($rb->logicalXor($true, $false)->evaluate($context));
     }
 
-    public function testRuleCreation()
-    {
-        $rb      = new RuleBuilder();
-        $context = new Context();
-
-        $true  = new TrueProposition();
-        $false = new FalseProposition();
-
-        $this->assertInstanceOf('Ruler\Rule', $rb->create($true));
-        $this->assertTrue($rb->create($true)->evaluate($context));
-        $this->assertFalse($rb->create($false)->evaluate($context));
-
-        $executed = false;
-        $rule = $rb->create($true, function() use (&$executed) {
-            $executed = true;
-        });
-
-        $this->assertFalse($executed);
-        $rule->execute($context);
-        $this->assertTrue($executed);
-    }
 }

@@ -27,18 +27,12 @@ class RuleTest extends \PHPUnit_Framework_TestCase
             new CallbackProposition(function ($c) use ($test, $context, &$executed, &$actionExecuted) {
                 $test->assertSame($c, $context);
                 $executed = true;
+
                 return false;
-            }),
-            function() use ($test, &$actionExecuted) {
-                $actionExecuted = true;
-            }
+            })
         );
 
         $this->assertFalse($ruleOne->evaluate($context));
-        $this->assertTrue($executed);
-
-        $ruleOne->execute($context);
-        $this->assertFalse($actionExecuted);
 
         $executed       = false;
         $actionExecuted = false;
@@ -47,6 +41,7 @@ class RuleTest extends \PHPUnit_Framework_TestCase
             new CallbackProposition(function ($c) use ($test, $context, &$executed, &$actionExecuted) {
                 $test->assertSame($c, $context);
                 $executed = true;
+
                 return true;
             }),
             function() use ($test, &$actionExecuted) {
@@ -55,19 +50,7 @@ class RuleTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->assertTrue($ruleTwo->evaluate($context));
-        $this->assertTrue($executed);
 
-        $ruleTwo->execute($context);
-        $this->assertTrue($actionExecuted);
     }
 
-    /**
-     * @expectedException LogicException
-     */
-    public function testNonCallableActionsWillThrowAnException()
-    {
-        $context = new Context();
-        $rule = new Rule(new TrueProposition(), 'this is not callable');
-        $rule->execute($context);
-    }
 }
